@@ -106,7 +106,8 @@ const About = () => {
               <div
                 key={skill}
                 className="glass-card px-4 py-3 rounded-lg text-center
-                  transition-all duration-300 hover:scale-105 hover:shadow-lg
+                  transition-all duration-300 hover:scale-105 
+                  dark:hover:shadow-light hover:shadow-lg
                   cursor-pointer active:scale-95 hover:bg-accent/50"
                 onClick={() => console.log(`${skill} clicked`)}
               >
@@ -120,7 +121,8 @@ const About = () => {
           <Link to="/contact">
             <Button
               className="w-full sm:w-auto transform transition-all duration-300
-                hover:scale-105 active:scale-95 hover:shadow-lg"
+                hover:scale-105 active:scale-95 
+                dark:hover:shadow-light hover:shadow-lg"
             >
               <Mail className="mr-2 h-4 w-4" />
               Contact Me
@@ -129,7 +131,9 @@ const About = () => {
           <Button
             variant="outline"
             className="w-full sm:w-auto transform transition-all duration-300
-              hover:scale-105 active:scale-95 hover:shadow-lg hover:bg-accent/10"
+              hover:scale-105 active:scale-95 
+              dark:hover:shadow-light hover:shadow-lg 
+              hover:bg-accent/10"
             onClick={handleDownloadResume}
             disabled={isDownloading}
           >
