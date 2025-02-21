@@ -66,6 +66,12 @@
   .glass-card {
     @apply dark:shadow-none dark:hover:shadow-light;
   }
+
+  .dark .hover\:shadow-white:hover {
+    --tw-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+    --tw-shadow-colored: 0 4px 10px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
 }
 
 .page-transition-enter {

@@ -105,10 +105,16 @@ const About = () => {
             {["React", "TypeScript", "C++", "Java", "TailwindCSS", "Firebase"].map((skill) => (
               <div
                 key={skill}
-                className="glass-card px-4 py-3 rounded-lg text-center
-                  transition-all duration-300 hover:scale-105 
-                  dark:hover:shadow-light hover:shadow-lg
-                  cursor-pointer active:scale-95 hover:bg-accent/50"
+                className="px-4 py-3 rounded-lg text-center
+                  transition-all duration-300 
+                  hover:scale-105 
+                  bg-background
+                  border border-border
+                  dark:hover:shadow-[0_4px_10px_rgba(255,255,255,0.1)]
+                  hover:shadow-lg
+                  cursor-pointer 
+                  active:scale-95 
+                  hover:bg-accent/10"
                 onClick={() => console.log(`${skill} clicked`)}
               >
                 {skill}
