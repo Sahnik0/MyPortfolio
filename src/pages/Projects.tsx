@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github } from "lucide-react";
 
@@ -69,16 +68,18 @@ const Projects = () => {
           {projects.map((project, index) => (
             <div
               key={index}
-              className="glass-card rounded-lg overflow-hidden group"
+              className="glass-card rounded-lg overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
-              <img
-                src={project.imageUrl}
-                alt={project.title}
-                className="w-full h-48 object-cover"
-                loading="lazy"
-              />
+              <div className="overflow-hidden">
+                <img
+                  src={project.imageUrl}
+                  alt={project.title}
+                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
               <div className="p-6">
-                <h3 className="text-xl font-display font-semibold">
+                <h3 className="text-xl font-display font-semibold transition-colors duration-300 group-hover:text-primary">
                   {project.title}
                 </h3>
                 <p className="mt-2 text-muted-foreground">
@@ -88,18 +89,25 @@ const Projects = () => {
                   {project.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                      className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary transition-all duration-300 hover:bg-primary hover:text-primary-foreground"
                     >
                       {tag}
                     </span>
                   ))}
                 </div>
                 <div className="mt-6 flex gap-4">
-                  <Button size="sm" className="w-full sm:w-auto">
+                  <Button 
+                    size="sm" 
+                    className="w-full sm:w-auto transition-transform duration-300 hover:scale-105 active:scale-95"
+                  >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Live Demo
                   </Button>
-                  <Button size="sm" variant="outline" className="w-full sm:w-auto">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-full sm:w-auto transition-transform duration-300 hover:scale-105 active:scale-95"
+                  >
                     <Github className="mr-2 h-4 w-4" />
                     Code
                   </Button>
