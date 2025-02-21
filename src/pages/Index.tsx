@@ -35,7 +35,7 @@ const Index = () => {
       <div className="max-w-4xl mx-auto">
         <span className="inline-block px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary animate-fade-down">
           <TypewriterText 
-            text="Hii I am Sahnik" 
+            text="Hii I am Sahnik !!" 
             delay={160}
             onComplete={() => setWelcomeComplete(true)} 
           />
