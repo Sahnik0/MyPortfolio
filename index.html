@@ -3,14 +3,81 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sahnik Biswas</title>
-    <meta property="og:image" content="/og-image.png" />
+    
+    <!-- Primary Meta Tags -->
+    <title>Sahnik Biswas - Software Developer Portfolio</title>
+    <meta name="title" content="Sahnik Biswas - Software Developer Portfolio">
+    <meta name="description" content="Software developer specializing in React, TypeScript, and modern web technologies. View my projects and get in touch.">
+    <meta name="keywords" content="software developer, web development, React, TypeScript, portfolio">
+    <meta name="author" content="Sahnik Biswas">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sahnik.tech/">
+    <meta property="og:title" content="Sahnik Biswas - Software Developer Portfolio">
+    <meta property="og:description" content="Software developer specializing in React, TypeScript, and modern web technologies.">
+    <meta property="og:image" content="/og-image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://sahnik.tech/">
+    <meta property="twitter:title" content="Sahnik Biswas - Software Developer Portfolio">
+    <meta property="twitter:description" content="Software developer specializing in React, TypeScript, and modern web technologies.">
+    <meta property="twitter:image" content="/og-image.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#000000">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://sahnik.tech/">
+    
+    <style>
+      .loader-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #000;
+      }
+      
+      .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #FFF;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        animation: rotation 1s linear infinite;
+      }
+
+      @keyframes rotation {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      #root:not(:empty) + .loader-container {
+        display: none;
+      }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
-    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <div class="loader-container">
+      <div class="loader"></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Preconnect to required origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   </body>
 </html>

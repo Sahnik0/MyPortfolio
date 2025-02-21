@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { SEO } from '../components/SEO';
 
 const TypewriterText = ({ text, delay = 150, onComplete }) => {
   const [displayText, setDisplayText] = useState('');
@@ -31,45 +32,51 @@ const Index = () => {
   const allComplete = welcomeComplete && headingComplete && descriptionComplete;
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center section-padding">
-      <div className="max-w-4xl mx-auto">
-        <span className="inline-block px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary animate-fade-down">
-          <TypewriterText 
-            text="Hii I am Sahnik !!" 
-            delay={160}
-            onComplete={() => setWelcomeComplete(true)} 
-          />
-        </span>
+    <>
+      <SEO 
+        title="Sahnik Biswas - Software Developer Portfolio"
+        description="Hi! I'm a passionate software developer with expertise in building modern web applications. I specialize in React, TypeScript, and modern web technologies."
+      />
+      <div className="min-h-[calc(100vh-5rem)] flex items-center section-padding">
+        <div className="max-w-4xl mx-auto">
+          <span className="inline-block px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary animate-fade-down">
+            <TypewriterText 
+              text="Hii I am Sahnik !!" 
+              delay={160}
+              onComplete={() => setWelcomeComplete(true)} 
+            />
+          </span>
 
-        <h1 className="mt-6 text-6xl font-display font-bold leading-tight animate-fade-up">
-          <TypewriterText 
-            text="Creating digital experiences with passion and purpose" 
-            delay={80}
-            onComplete={() => setHeadingComplete(true)}
-          />
-        </h1>
+          <h1 className="mt-6 text-6xl font-display font-bold leading-tight animate-fade-up">
+            <TypewriterText 
+              text="Creating digital experiences with passion and purpose" 
+              delay={80}
+              onComplete={() => setHeadingComplete(true)}
+            />
+          </h1>
 
-        <p className="mt-6 text-xl text-muted-foreground max-w-2xl animate-fade-up [animation-delay:200ms]">
-          <TypewriterText 
-            text="I'm a software developer focused on building beautiful, functional, and user-centered digital experiences."
-            delay={40}
-            onComplete={() => setDescriptionComplete(true)}
-          />
-        </p>
+          <p className="mt-6 text-xl text-muted-foreground max-w-2xl animate-fade-up [animation-delay:200ms]">
+            <TypewriterText 
+              text="I'm a software developer focused on building beautiful, functional, and user-centered digital experiences."
+              delay={40}
+              onComplete={() => setDescriptionComplete(true)}
+            />
+          </p>
 
-        <div className={`mt-8 flex gap-4 transition-all duration-1000 ${allComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <Link to="/projects">
-            <Button className="group">
-              View Projects
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-          </Link>
-          <Link to="/contact">
-            <Button variant="outline">Contact Me</Button>
-          </Link>
+          <div className={`mt-8 flex gap-4 transition-all duration-1000 ${allComplete ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <Link to="/projects">
+              <Button className="group">
+                View Projects
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link to="/contact">
+              <Button variant="outline">Contact Me</Button>
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

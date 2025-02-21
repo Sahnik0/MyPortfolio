@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://sahnik.tech/</loc>
+    <lastmod>2024-02-21</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://sahnik.tech/about</loc>
+    <lastmod>2024-02-21</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <SEO 
+    title="About Me - Sahnik Biswas"
+    description="Learn about my journey as a software developer, my skills, and experience in web development."
+  />
+  <url>
+    <loc>https://sahnik.tech/projects</loc>
+    <lastmod>2024-02-21</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <SEO 
+    title="Projects - Sahnik Biswas"
+    description="Explore my portfolio of web development projects using React, TypeScript, and modern technologies."
+  />
+  <url>
+    <loc>https://sahnik.tech/contact</loc>
+    <lastmod>2024-02-21</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <SEO 
+    title="Contact - Sahnik Biswas"
+    description="Get in touch with me for collaboration opportunities or any questions about my work."
+  />
+</urlset>
