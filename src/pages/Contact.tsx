@@ -115,7 +115,7 @@ const Contact = () => {
             href="mailto:your.email@example.com"
             className="text-primary hover:underline"
           >
-            your.email@example.com
+            tb123983@gmail.com
           </a>
         </div>
       </div>
