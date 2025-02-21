@@ -1,8 +1,8 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Send } from "lucide-react";
+import { Github, Linkedin, Twitter, Instagram } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -18,15 +18,15 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
     toast({
       title: "Message sent!",
       description: "Thank you for your message. I'll get back to you soon.",
     });
-    
+
     setFormData({ name: "", email: "", message: "" });
     setIsSubmitting(false);
   };
@@ -38,6 +38,29 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const socialLinks = [
+    {
+      name: "LinkedIn",
+      icon: Linkedin,
+      url: "https://linkedin.com/in/sahnik-biswas-8514012a7",
+    },
+    {
+      name: "GitHub",
+      icon: Github,
+      url: "https://github.com/Sahnik0",
+    },
+    {
+      name: "Twitter",
+      icon: Twitter,
+      url: "https://x.com/sahnik_biswas",
+    },
+    {
+      name: "Instagram",
+      icon: Instagram,
+      url: "https://instagram.com/sahnik_biswas",
+    },
+  ];
+
   return (
     <div className="section-padding min-h-screen">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
@@ -47,6 +70,21 @@ const Contact = () => {
         <p className="mt-4 text-lg text-muted-foreground animate-fade-up [animation-delay:200ms]">
           Have a question or want to work together? Feel free to reach out!
         </p>
+
+        <div className="mt-6 flex justify-center space-x-8 animate-fade-up [animation-delay:1s]">
+          {socialLinks.map((social) => (
+            <a
+              key={social.name}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors hover:scale-110 transform duration-200"
+              aria-label={social.name}
+            >
+              <social.icon className="h-8 w-8" />
+            </a>
+          ))}
+        </div>
 
         <form
           onSubmit={handleSubmit}
@@ -112,7 +150,7 @@ const Contact = () => {
         <div className="mt-16 text-center text-muted-foreground animate-fade-up [animation-delay:600ms]">
           <p>Prefer email?</p>
           <a
-            href="mailto:your.email@example.com"
+            href="mailto:tb123983@gmail.com"
             className="text-primary hover:underline"
           >
             tb123983@gmail.com
