@@ -36,7 +36,7 @@ const Index = () => {
         <span className="inline-block px-4 py-2 rounded-full text-sm font-medium bg-primary/10 text-primary animate-fade-down">
           <TypewriterText 
             text="Welcome to my portfolio" 
-            delay={170}
+            delay={160}
             onComplete={() => setWelcomeComplete(true)} 
           />
         </span>
@@ -44,7 +44,7 @@ const Index = () => {
         <h1 className="mt-6 text-6xl font-display font-bold leading-tight animate-fade-up">
           <TypewriterText 
             text="Creating digital experiences with passion and purpose" 
-            delay={90}
+            delay={80}
             onComplete={() => setHeadingComplete(true)}
           />
         </h1>
@@ -52,7 +52,7 @@ const Index = () => {
         <p className="mt-6 text-xl text-muted-foreground max-w-2xl animate-fade-up [animation-delay:200ms]">
           <TypewriterText 
             text="I'm a software developer focused on building beautiful, functional, and user-centered digital experiences."
-            delay={50}
+            delay={40}
             onComplete={() => setDescriptionComplete(true)}
           />
         </p>
