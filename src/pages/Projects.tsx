@@ -4,12 +4,12 @@ import { ExternalLink, Github } from "lucide-react";
 const Projects = () => {
   const projects = [
     {
-      title: "E-commerce Platform",
-      description: "A full-stack e-commerce solution built with React and Firebase",
+      title: "Lexishift",
+      description: "A platform for Dyslexic People",
       tags: ["React", "Firebase", "Tailwind CSS"],
-      liveUrl: "#",
-      githubUrl: "#",
-      imageUrl: "/placeholder.svg",
+      liveUrl: "https://lexishift.vercel.app/",
+      githubUrl: "https://github.com/Sahnik0/Lexishift",
+      imageUrl: "/Lexishift.jpg",
     },
     {
       title: "Task Management App",
@@ -99,6 +99,8 @@ const Projects = () => {
                   <Button 
                     size="sm" 
                     className="w-full sm:w-auto transition-transform duration-300 hover:scale-105 active:scale-95"
+                    onClick={() => window.open(project.liveUrl, '_blank')}
+                    disabled={project.liveUrl === '#'}
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     Live Demo
@@ -107,6 +109,8 @@ const Projects = () => {
                     size="sm" 
                     variant="outline" 
                     className="w-full sm:w-auto transition-transform duration-300 hover:scale-105 active:scale-95"
+                    onClick={() => window.open(project.githubUrl, '_blank')}
+                    disabled={project.githubUrl === '#'}
                   >
                     <Github className="mr-2 h-4 w-4" />
                     Code
