@@ -34,7 +34,7 @@ const About = () => {
 
   const paragraphs = [
     "Hi! I'm a passionate software developer with expertise in building modern web applications. I specialize in React, TypeScript, and modern web technologies.",
-    "With several years of experience in the industry, I've worked on various projects ranging from small business websites to large-scale enterprise applications.",
+    "With a strong foundation in software development, I have built multiple projects that showcase my ability to create scalable and efficient web applications.",
     "My approach to development focuses on creating clean, maintainable code while ensuring an excellent user experience across all devices."
   ];
 

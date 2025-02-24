@@ -57,7 +57,7 @@ const Index = () => {
 
           <p className="mt-6 text-xl text-muted-foreground max-w-2xl animate-fade-up [animation-delay:200ms]">
             <TypewriterText 
-              text="I'm a software developer focused on building beautiful, functional, and user-centered digital experiences."
+              text="I'm a software developer focused on building fullstack, functional, and user-centered digital experiences."
               delay={40}
               onComplete={() => setDescriptionComplete(true)}
             />
