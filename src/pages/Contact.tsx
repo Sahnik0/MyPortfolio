@@ -1,118 +1,227 @@
-
-import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Github } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
+import { Github, Linkedin, Twitter, Instagram } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  liveUrl: string;
-  githubUrl: string;
-  imageUrl: string;
-}
+const Contact = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-const Projects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "projects"));
-        const projectsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Project[];
-        setProjects(projectsData);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchProjects();
-  }, []);
 
-  if (loading) {
-    return (
-      <div className="section-padding">
-        <div className="max-w-6xl mx-auto">
-          <p>Loading projects...</p>
-        </div>
-      </div>
-    );
-  }
+    // Simulate form submission
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+
+
+
+
+
+
+
+    toast({
+      title: "Message sent!",
+      description: "Thank you for your message. I'll get back to you soon.",
+    });
+
+    setFormData({ name: "", email: "", message: "" });
+    setIsSubmitting(false);
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const socialLinks = [
+    {
+      name: "LinkedIn",
+      icon: Linkedin,
+      url: "https://linkedin.com/in/sahnik-biswas-8514012a7",
+    },
+    {
+      name: "GitHub",
+      icon: Github,
+      url: "https://github.com/Sahnik0",
+    },
+    {
+      name: "Twitter",
+      icon: Twitter,
+      url: "https://x.com/sahnik_biswas",
+    },
+    {
+      name: "Instagram",
+      icon: Instagram,
+      url: "https://instagram.com/sahnik_biswas",
+    },
+  ];
 
   return (
-    <div className="section-padding">
-      <div className="max-w-6xl mx-auto">
+    <div className="section-padding min-h-screen">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <h1 className="text-4xl md:text-5xl font-display font-bold animate-fade-up">
-          My Projects
+          Get in Touch
         </h1>
-        <p className="mt-4 text-lg text-muted-foreground max-w-2xl animate-fade-up [animation-delay:200ms]">
-          Here are some of my featured projects. Each one represents unique
-          challenges and learning experiences.
+        <p className="mt-4 text-lg text-muted-foreground animate-fade-up [animation-delay:200ms]">
+          Have a question or want to work together? Feel free to reach out!
+
         </p>
 
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-up [animation-delay:400ms]">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="glass-card rounded-lg overflow-hidden group"
+        <div className="mt-6 flex justify-center space-x-8 animate-fade-up [animation-delay:1s]">
+          {socialLinks.map((social) => (
+            <a
+              key={social.name}
+              href={social.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-primary transition-colors hover:scale-110 transform duration-200"
+              aria-label={social.name}
             >
-              <img
-                src={project.imageUrl || "/placeholder.svg"}
-                alt={project.title}
-                className="w-full h-48 object-cover"
-                loading="lazy"
-              />
-              <div className="p-6">
-                <h3 className="text-xl font-display font-semibold">
-                  {project.title}
-                </h3>
-                <p className="mt-2 text-muted-foreground">
-                  {project.description}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-6 flex gap-4">
-                  {project.liveUrl && (
-                    <Button size="sm" className="w-full sm:w-auto" asChild>
-                      <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Live Demo
-                      </a>
-                    </Button>
-                  )}
-                  {project.githubUrl && (
-                    <Button size="sm" variant="outline" className="w-full sm:w-auto" asChild>
-                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                        <Github className="mr-2 h-4 w-4" />
-                        Code
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
+              <social.icon className="h-8 w-8" />
+            </a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
           ))}
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-8 space-y-6 animate-fade-up [animation-delay:400ms]"
+        >
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
+              Name
+            </label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Your name"
+              required
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">
+              Email
+            </label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Your email"
+              required
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="message" className="text-sm font-medium">
+              Message
+            </label>
+            <Textarea
+              id="message"
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              placeholder="Your message"
+              rows={6}
+              required
+              className="w-full"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full sm:w-auto"
+            disabled={isSubmitting}
+          >
+            <Send className="mr-2 h-4 w-4" />
+            {isSubmitting ? "Sending..." : "Send Message"}
+          </Button>
+        </form>
+
+        <div className="mt-16 text-center text-muted-foreground animate-fade-up [animation-delay:600ms]">
+          <p>Prefer email?</p>
+          <a
+            href="mailto:tb123983@gmail.com"
+            className="text-primary hover:underline"
+          >
+            tb123983@gmail.com
+          </a>
         </div>
       </div>
     </div>
   );
 };
 
-export default Projects;
+export default Contact;
