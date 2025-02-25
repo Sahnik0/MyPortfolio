@@ -183,15 +183,15 @@ const Admin = () => {
     }
   };
 
-  const handleSave = async (collection: string, data: any) => {
+  const handleSave = async (collectionName: string, data: any) => {
     try {
       if (isEditing && currentItem) {
-        await updateDoc(doc(db, collection, currentItem.id), {
+        await updateDoc(doc(db, collectionName, currentItem.id), {
           ...data,
           updatedAt: serverTimestamp(),
         });
       } else {
-        await addDoc(collection(db, collection), {
+        await addDoc(collection(db, collectionName), {
           ...data,
           createdAt: serverTimestamp(),
         });
@@ -200,8 +200,8 @@ const Admin = () => {
         title: "Success",
         description: `Item ${isEditing ? "updated" : "created"} successfully.`,
       });
-      if (collection === "projects") fetchProjects();
-      if (collection === "blogPosts") fetchBlogPosts();
+      if (collectionName === "projects") fetchProjects();
+      if (collectionName === "blogPosts") fetchBlogPosts();
       resetForms();
     } catch (error) {
       toast({

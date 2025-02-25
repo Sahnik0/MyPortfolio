@@ -1,57 +1,51 @@
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github } from "lucide-react";
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  liveUrl: string;
+  githubUrl: string;
+  imageUrl: string;
+}
+
 const Projects = () => {
-  const projects = [
-    {
-      title: "Lexishift",
-      description: "A platform for Dyslexic People",
-      tags: ["React", "Firebase", "Tailwind CSS"],
-      liveUrl: "https://lexishift.vercel.app/",
-      githubUrl: "https://github.com/Sahnik0/Lexishift",
-      imageUrl: "/Lexishift.jpg",
-    },
-    {
-      title: "Task Management App",
-      description: "A collaborative task management tool for teams",
-      tags: ["TypeScript", "React", "Firebase"],
-      liveUrl: "#",
-      githubUrl: "#",
-      imageUrl: "/placeholder.svg",
-    },
-    {
-      title: "Weather Dashboard",
-      description: "Real-time weather information with interactive maps",
-      tags: ["React", "APIs", "Charts"],
-      liveUrl: "#",
-      githubUrl: "#",
-      imageUrl: "/placeholder.svg",
-    },
-    {
-      title: "Social Media Dashboard",
-      description: "Analytics dashboard for social media performance tracking",
-      tags: ["Next.js", "TypeScript", "Analytics"],
-      liveUrl: "#",
-      githubUrl: "#",
-      imageUrl: "/placeholder.svg",
-    },
-    {
-      title: "AI Image Generator",
-      description: "Generate custom images using state-of-the-art AI models",
-      tags: ["AI/ML", "Python", "React"],
-      liveUrl: "#",
-      githubUrl: "#",
-      imageUrl: "/placeholder.svg",
-    },
-    {
-      title: "Portfolio Website",
-      description: "Modern portfolio website with dark mode and responsive design",
-      tags: ["React", "Tailwind CSS", "TypeScript"],
-      liveUrl: "#",
-      githubUrl: "#",
-      imageUrl: "/placeholder.svg",
-    },
-  ];
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "projects"));
+        const projectsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Project[];
+        setProjects(projectsData);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="section-padding">
+        <div className="max-w-6xl mx-auto flex items-center justify-center min-h-[60vh]">
+          <div className="loader"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="section-padding">
