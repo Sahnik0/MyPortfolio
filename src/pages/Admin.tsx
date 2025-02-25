@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { signInWithPopup, signOut } from "firebase/auth";
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp, increment, getDoc, setDoc } from "firebase/firestore";
 import { auth, googleProvider, db } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -49,8 +49,9 @@ interface BlogPost {
 }
 
 interface VisitStats {
+  id: string;
+  count: number;
   date: string;
-  visits: number;
 }
 
 const Admin = () => {
@@ -61,6 +62,8 @@ const Admin = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [error, setError] = useState<string>("");
   const [visitStats, setVisitStats] = useState<VisitStats[]>([]);
+  const [totalVisits, setTotalVisits] = useState(0);
+  const [averageVisits, setAverageVisits] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   const [projectForm, setProjectForm] = useState({
@@ -91,6 +94,10 @@ const Admin = () => {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    incrementVisitCount();
   }, []);
 
   const handleLogin = async () => {
@@ -155,12 +162,41 @@ const Admin = () => {
     try {
       const querySnapshot = await getDocs(collection(db, "visits"));
       const statsData = querySnapshot.docs.map(doc => ({
-        date: doc.id,
-        visits: doc.data().count
-      }));
+        id: doc.id,
+        ...doc.data()
+      })) as VisitStats[];
+
+      statsData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
       setVisitStats(statsData);
+
+      const total = statsData.reduce((acc, curr) => acc + (curr.count || 0), 0);
+      setTotalVisits(total);
+
+      setAverageVisits(Math.round(total / (statsData.length || 1)));
     } catch (error) {
       console.error("Error fetching visit stats:", error);
+    }
+  };
+
+  const incrementVisitCount = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const visitRef = doc(db, "visits", today);
+      const visitDoc = await getDoc(visitRef);
+
+      if (visitDoc.exists()) {
+        await updateDoc(visitRef, {
+          count: increment(1)
+        });
+      } else {
+        await setDoc(visitRef, {
+          count: 1,
+          date: today
+        });
+      }
+    } catch (error) {
+      console.error("Error updating visit count:", error);
     }
   };
 
@@ -301,23 +337,23 @@ const Admin = () => {
                   <Users className="h-4 w-4" />
                   <h3 className="font-semibold">Total Visitors</h3>
                 </div>
-                <p className="text-2xl font-bold mt-2">
-                  {visitStats.reduce((acc, curr) => acc + curr.visits, 0)}
-                </p>
+                <p className="text-2xl font-bold mt-2">{totalVisits}</p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  <h3 className="font-semibold">Avg. Time on Site</h3>
+                  <h3 className="font-semibold">Avg. Daily Visits</h3>
                 </div>
-                <p className="text-2xl font-bold mt-2">2m 45s</p>
+                <p className="text-2xl font-bold mt-2">{averageVisits}</p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-2">
                   <Eye className="h-4 w-4" />
-                  <h3 className="font-semibold">Page Views</h3>
+                  <h3 className="font-semibold">Today's Visits</h3>
                 </div>
-                <p className="text-2xl font-bold mt-2">1,234</p>
+                <p className="text-2xl font-bold mt-2">
+                  {visitStats.find(stat => stat.date === new Date().toISOString().split('T')[0])?.count || 0}
+                </p>
               </Card>
             </div>
             <Card className="p-4">
@@ -326,10 +362,16 @@ const Admin = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={visitStats}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                    />
                     <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="visits" fill="#3b82f6" />
+                    <Tooltip 
+                      labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                      formatter={(value) => [value as number, "Visits"]}
+                    />
+                    <Bar dataKey="count" fill="#3b82f6" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
