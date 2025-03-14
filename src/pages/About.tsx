@@ -42,7 +42,7 @@ const About = () => {
     setIsDownloading(true);
     try {
       // TODO: Replace with actual resume file path
-      const resumePath = '/path/to/your/resume.pdf';
+      const resumePath = '/public/Sahnik_Biswas_Resume.pdf';
       const response = await fetch(resumePath);
       const blob = await response.blob();
 
