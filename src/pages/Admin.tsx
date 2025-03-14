@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { signInWithPopup, signOut } from "firebase/auth";
-import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, addDoc, updateDoc, serverTimestamp, getDoc, setDoc, increment } from "firebase/firestore";
 import { auth, googleProvider, db } from "@/lib/firebase";
+import { uploadImageToCloudinary } from "@/utils/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { LogOut, Trash2, Edit, Plus, Users, Clock, Eye } from "lucide-react";
+import { LogOut, Trash2, Edit, Plus, Users, Clock, Eye, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,8 +50,27 @@ interface BlogPost {
 }
 
 interface VisitStats {
+  id: string;
+  count: number;
   date: string;
-  visits: number;
+}
+
+interface ProjectFormState {
+  title: string;
+  description: string;
+  tags: string;
+  liveUrl: string;
+  githubUrl: string;
+  imageUrl: string;
+  imageFile: File | null;
+}
+
+interface BlogFormState {
+  title: string;
+  excerpt: string;
+  content: string;
+  author: string;
+  category: string;
 }
 
 const Admin = () => {
@@ -61,37 +81,31 @@ const Admin = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [error, setError] = useState<string>("");
   const [visitStats, setVisitStats] = useState<VisitStats[]>([]);
+  const [totalVisits, setTotalVisits] = useState(0);
+  const [averageVisits, setAverageVisits] = useState(0);
   const [isEditing, setIsEditing] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
-  const [projectForm, setProjectForm] = useState({
+  const [imageUploading, setImageUploading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [blogDialogOpen, setBlogDialogOpen] = useState(false);
+  
+  const [projectForm, setProjectForm] = useState<ProjectFormState>({
     title: "",
     description: "",
     tags: "",
     liveUrl: "",
     githubUrl: "",
     imageUrl: "",
+    imageFile: null
   });
-  const [blogForm, setBlogForm] = useState({
+  
+  const [blogForm, setBlogForm] = useState<BlogFormState>({
     title: "",
     excerpt: "",
     content: "",
     author: "",
-    category: "",
+    category: ""
   });
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-      if (user?.email === "tb123983@gmail.com") {
-        fetchContacts();
-        fetchProjects();
-        fetchBlogPosts();
-        fetchVisitStats();
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const handleLogin = async () => {
     try {
@@ -155,10 +169,18 @@ const Admin = () => {
     try {
       const querySnapshot = await getDocs(collection(db, "visits"));
       const statsData = querySnapshot.docs.map(doc => ({
-        date: doc.id,
-        visits: doc.data().count
-      }));
+        id: doc.id,
+        ...doc.data()
+      })) as VisitStats[];
+
+      statsData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
       setVisitStats(statsData);
+
+      const total = statsData.reduce((acc, curr) => acc + (curr.count || 0), 0);
+      setTotalVisits(total);
+
+      setAverageVisits(Math.round(total / (statsData.length || 1)));
     } catch (error) {
       console.error("Error fetching visit stats:", error);
     }
@@ -183,6 +205,50 @@ const Admin = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProjectForm({
+        ...projectForm,
+        imageFile: e.target.files[0],
+        imageUrl: URL.createObjectURL(e.target.files[0])
+      });
+    }
+  };
+
+  const handleUploadImage = async () => {
+    if (!projectForm.imageFile) {
+      toast({
+        title: "No image selected",
+        description: "Please select an image to upload.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setImageUploading(true);
+    
+    try {
+      const imageUrl = await uploadImageToCloudinary(projectForm.imageFile);
+      setProjectForm({
+        ...projectForm,
+        imageUrl
+      });
+      toast({
+        title: "Image uploaded",
+        description: "Image successfully uploaded to Cloudinary.",
+      });
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+      console.error(error);
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   const handleSave = async (collectionName: string, data: any) => {
     try {
       if (isEditing && currentItem) {
@@ -190,23 +256,31 @@ const Admin = () => {
           ...data,
           updatedAt: serverTimestamp(),
         });
+        toast({
+          title: "Success",
+          description: "Item updated successfully.",
+        });
       } else {
         await addDoc(collection(db, collectionName), {
           ...data,
           createdAt: serverTimestamp(),
         });
+        toast({
+          title: "Success",
+          description: "Item created successfully.",
+        });
       }
-      toast({
-        title: "Success",
-        description: `Item ${isEditing ? "updated" : "created"} successfully.`,
-      });
+      
       if (collectionName === "projects") fetchProjects();
       if (collectionName === "blogPosts") fetchBlogPosts();
       resetForms();
+      setDialogOpen(false);
+      setBlogDialogOpen(false);
     } catch (error) {
+      console.error("Error saving item:", error);
       toast({
         title: "Error",
-        description: "Failed to save the item.",
+        description: "Failed to save the item. Please try again.",
         variant: "destructive",
       });
     }
@@ -220,6 +294,7 @@ const Admin = () => {
       liveUrl: "",
       githubUrl: "",
       imageUrl: "",
+      imageFile: null
     });
     setBlogForm({
       title: "",
@@ -239,10 +314,12 @@ const Admin = () => {
       title: project.title,
       description: project.description,
       tags: project.tags.join(", "),
-      liveUrl: project.liveUrl,
-      githubUrl: project.githubUrl,
-      imageUrl: project.imageUrl,
+      liveUrl: project.liveUrl || "",
+      githubUrl: project.githubUrl || "",
+      imageUrl: project.imageUrl || "",
+      imageFile: null
     });
+    setDialogOpen(true);
   };
 
   const handleEditBlogPost = (post: BlogPost) => {
@@ -255,7 +332,47 @@ const Admin = () => {
       author: post.author,
       category: post.category,
     });
+    setBlogDialogOpen(true);
   };
+
+  const incrementVisitCount = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const visitRef = doc(db, "visits", today);
+      const visitDoc = await getDoc(visitRef);
+
+      if (visitDoc.exists()) {
+        await updateDoc(visitRef, {
+          count: increment(1)
+        });
+      } else {
+        await setDoc(visitRef, {
+          count: 1,
+          date: today
+        });
+      }
+    } catch (error) {
+      console.error("Error updating visit count:", error);
+    }
+  };
+
+  useEffect(() => {
+    incrementVisitCount();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      if (user?.email === "tb123983@gmail.com") {
+        fetchContacts();
+        fetchProjects();
+        fetchBlogPosts();
+        fetchVisitStats();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   if (!user || user.email !== "tb123983@gmail.com") {
     return (
@@ -301,23 +418,23 @@ const Admin = () => {
                   <Users className="h-4 w-4" />
                   <h3 className="font-semibold">Total Visitors</h3>
                 </div>
-                <p className="text-2xl font-bold mt-2">
-                  {visitStats.reduce((acc, curr) => acc + curr.visits, 0)}
-                </p>
+                <p className="text-2xl font-bold mt-2">{totalVisits}</p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  <h3 className="font-semibold">Avg. Time on Site</h3>
+                  <h3 className="font-semibold">Avg. Daily Visits</h3>
                 </div>
-                <p className="text-2xl font-bold mt-2">2m 45s</p>
+                <p className="text-2xl font-bold mt-2">{averageVisits}</p>
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-2">
                   <Eye className="h-4 w-4" />
-                  <h3 className="font-semibold">Page Views</h3>
+                  <h3 className="font-semibold">Today's Visits</h3>
                 </div>
-                <p className="text-2xl font-bold mt-2">1,234</p>
+                <p className="text-2xl font-bold mt-2">
+                  {visitStats.find(stat => stat.date === new Date().toISOString().split('T')[0])?.count || 0}
+                </p>
               </Card>
             </div>
             <Card className="p-4">
@@ -326,10 +443,16 @@ const Admin = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={visitStats}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(date) => new Date(date).toLocaleDateString()}
+                    />
                     <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="visits" fill="#3b82f6" />
+                    <Tooltip 
+                      labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                      formatter={(value) => [value as number, "Visits"]}
+                    />
+                    <Bar dataKey="count" fill="#3b82f6" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -366,20 +489,26 @@ const Admin = () => {
 
           <TabsContent value="projects" className="space-y-4">
             <div className="flex justify-end">
-              <Dialog onOpenChange={() => resetForms()}>
+              <Dialog open={dialogOpen} onOpenChange={(open) => {
+                setDialogOpen(open);
+                if (!open) resetForms();
+              }}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button onClick={() => {
+                    resetForms();
+                    setDialogOpen(true);
+                  }}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Project
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-xl">
                   <DialogHeader>
                     <DialogTitle>
                       {isEditing ? "Edit Project" : "Add New Project"}
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 py-4">
+                  <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto">
                     <div className="space-y-2">
                       <Input
                         placeholder="Project Title"
@@ -435,29 +564,53 @@ const Admin = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Input
-                        placeholder="Image URL"
-                        value={projectForm.imageUrl}
-                        onChange={(e) =>
-                          setProjectForm({
-                            ...projectForm,
-                            imageUrl: e.target.value,
-                          })
-                        }
-                      />
+                      <label className="block text-sm font-medium mb-1">Project Image</label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="flex-1"
+                        />
+                        <Button 
+                          type="button" 
+                          onClick={handleUploadImage}
+                          disabled={!projectForm.imageFile || imageUploading}
+                          size="sm"
+                        >
+                          {imageUploading ? "Uploading..." : "Upload"}
+                          <Upload className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                      {projectForm.imageUrl && (
+                        <div className="mt-2">
+                          <p className="text-sm text-muted-foreground mb-1">Image Preview:</p>
+                          <img 
+                            src={projectForm.imageUrl} 
+                            alt="Preview" 
+                            className="max-h-40 object-cover rounded-md" 
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button
-                      onClick={() =>
-                        handleSave("projects", {
-                          ...projectForm,
+                    <Button 
+                      onClick={() => {
+                        const projectData = {
+                          title: projectForm.title,
+                          description: projectForm.description,
                           tags: projectForm.tags
                             .split(",")
                             .map((tag) => tag.trim())
                             .filter(Boolean),
-                        })
-                      }
+                          liveUrl: projectForm.liveUrl,
+                          githubUrl: projectForm.githubUrl,
+                          imageUrl: projectForm.imageUrl,
+                        };
+                        handleSave("projects", projectData);
+                      }}
+                      disabled={!projectForm.imageUrl || !projectForm.title}
                     >
                       {isEditing ? "Update" : "Create"} Project
                     </Button>
@@ -468,20 +621,29 @@ const Admin = () => {
             {projects.map((project) => (
               <Card key={project.id} className="p-6">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-semibold">{project.title}</h3>
-                    <p className="text-muted-foreground mt-2">
-                      {project.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {project.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
+                  <div className="flex gap-4">
+                    {project.imageUrl && (
+                      <img 
+                        src={project.imageUrl} 
+                        alt={project.title} 
+                        className="w-24 h-24 object-cover rounded-md"
+                      />
+                    )}
+                    <div>
+                      <h3 className="text-xl font-semibold">{project.title}</h3>
+                      <p className="text-muted-foreground mt-2">
+                        {project.description}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {project.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -507,9 +669,15 @@ const Admin = () => {
 
           <TabsContent value="blog" className="space-y-4">
             <div className="flex justify-end">
-              <Dialog onOpenChange={() => resetForms()}>
+              <Dialog open={blogDialogOpen} onOpenChange={(open) => {
+                setBlogDialogOpen(open);
+                if (!open) resetForms();
+              }}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button onClick={() => {
+                    resetForms();
+                    setBlogDialogOpen(true);
+                  }}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Blog Post
                   </Button>
