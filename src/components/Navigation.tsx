@@ -40,6 +40,6 @@ const Navigation = () => {
       </div>
     </nav>
   );
-}
+};
 
 export default Navigation;
