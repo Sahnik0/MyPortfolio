@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   BarChart,
   Bar,
@@ -514,7 +515,7 @@ const Admin = () => {
                       tickFormatter={(date) => new Date(date).toLocaleDateString()}
                     />
                     <YAxis />
-                    <Tooltip 
+                    <RechartsTooltip 
                       labelFormatter={(date) => new Date(date).toLocaleDateString()}
                       formatter={(value) => [value as number, "Visits"]}
                     />
