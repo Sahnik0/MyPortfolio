@@ -39,6 +39,11 @@ const Blog = () => {
     fetchBlogPosts();
   }, []);
 
+  const formatContent = (content: string) => {
+    // Split content by newlines and filter out empty lines
+    return content.split('\n').filter(line => line.trim() !== '');
+  };
+
   if (loading) {
     return (
       <div className="section-padding">
@@ -88,9 +93,13 @@ const Blog = () => {
                   <h2 className="text-xl md:text-2xl font-display font-semibold mb-2">
                     {post.title}
                   </h2>
-                  <p className="text-muted-foreground mb-4">
-                    {post.excerpt}
-                  </p>
+                  <div className="text-muted-foreground mb-4">
+                    {formatContent(post.excerpt || "").map((paragraph, idx) => (
+                      <p key={idx} className={idx > 0 ? 'mt-2' : ''}>
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm px-2 py-1 rounded-full bg-primary/10 text-primary">
                       {post.category}

@@ -6,7 +6,7 @@ import { uploadImageToCloudinary } from "@/utils/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { LogOut, Trash2, Edit, Plus, Users, Clock, Eye, Upload } from "lucide-react";
+import { LogOut, Trash2, Edit, Plus, Users, Clock, Eye, Upload, Image } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +17,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer
 } from "recharts";
 
@@ -55,6 +55,14 @@ interface VisitStats {
   date: string;
 }
 
+interface GalleryImage {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+}
+
 interface ProjectFormState {
   title: string;
   description: string;
@@ -73,12 +81,21 @@ interface BlogFormState {
   category: string;
 }
 
+interface GalleryFormState {
+  title: string;
+  description: string;
+  category: string;
+  imageUrl: string;
+  imageFile: File | null;
+}
+
 const Admin = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [error, setError] = useState<string>("");
   const [visitStats, setVisitStats] = useState<VisitStats[]>([]);
   const [totalVisits, setTotalVisits] = useState(0);
@@ -88,6 +105,7 @@ const Admin = () => {
   const [imageUploading, setImageUploading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [blogDialogOpen, setBlogDialogOpen] = useState(false);
+  const [galleryDialogOpen, setGalleryDialogOpen] = useState(false);
   
   const [projectForm, setProjectForm] = useState<ProjectFormState>({
     title: "",
@@ -105,6 +123,14 @@ const Admin = () => {
     content: "",
     author: "",
     category: ""
+  });
+
+  const [galleryForm, setGalleryForm] = useState<GalleryFormState>({
+    title: "",
+    description: "",
+    category: "",
+    imageUrl: "",
+    imageFile: null
   });
 
   const handleLogin = async () => {
@@ -165,6 +191,19 @@ const Admin = () => {
     }
   };
 
+  const fetchGalleryImages = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "galleryImages"));
+      const imagesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as GalleryImage[];
+      setGalleryImages(imagesData);
+    } catch (error) {
+      console.error("Error fetching gallery images:", error);
+    }
+  };
+
   const fetchVisitStats = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "visits"));
@@ -196,6 +235,7 @@ const Admin = () => {
       if (collection === "contacts") fetchContacts();
       if (collection === "projects") fetchProjects();
       if (collection === "blogPosts") fetchBlogPosts();
+      if (collection === "galleryImages") fetchGalleryImages();
     } catch (error) {
       toast({
         title: "Error",
@@ -205,18 +245,18 @@ const Admin = () => {
     }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, formSetter: (value: any) => void, currentForm: any) => {
     if (e.target.files && e.target.files[0]) {
-      setProjectForm({
-        ...projectForm,
+      formSetter({
+        ...currentForm,
         imageFile: e.target.files[0],
         imageUrl: URL.createObjectURL(e.target.files[0])
       });
     }
   };
 
-  const handleUploadImage = async () => {
-    if (!projectForm.imageFile) {
+  const handleUploadImage = async (formData: any, formSetter: (value: any) => void) => {
+    if (!formData.imageFile) {
       toast({
         title: "No image selected",
         description: "Please select an image to upload.",
@@ -228,15 +268,16 @@ const Admin = () => {
     setImageUploading(true);
     
     try {
-      const imageUrl = await uploadImageToCloudinary(projectForm.imageFile);
-      setProjectForm({
-        ...projectForm,
+      const imageUrl = await uploadImageToCloudinary(formData.imageFile);
+      formSetter({
+        ...formData,
         imageUrl
       });
       toast({
         title: "Image uploaded",
         description: "Image successfully uploaded to Cloudinary.",
       });
+      return imageUrl;
     } catch (error) {
       toast({
         title: "Upload failed",
@@ -244,6 +285,7 @@ const Admin = () => {
         variant: "destructive",
       });
       console.error(error);
+      return null;
     } finally {
       setImageUploading(false);
     }
@@ -273,9 +315,11 @@ const Admin = () => {
       
       if (collectionName === "projects") fetchProjects();
       if (collectionName === "blogPosts") fetchBlogPosts();
+      if (collectionName === "galleryImages") fetchGalleryImages();
       resetForms();
       setDialogOpen(false);
       setBlogDialogOpen(false);
+      setGalleryDialogOpen(false);
     } catch (error) {
       console.error("Error saving item:", error);
       toast({
@@ -302,6 +346,13 @@ const Admin = () => {
       content: "",
       author: "",
       category: "",
+    });
+    setGalleryForm({
+      title: "",
+      description: "",
+      category: "",
+      imageUrl: "",
+      imageFile: null
     });
     setIsEditing(false);
     setCurrentItem(null);
@@ -333,6 +384,19 @@ const Admin = () => {
       category: post.category,
     });
     setBlogDialogOpen(true);
+  };
+
+  const handleEditGalleryImage = (image: GalleryImage) => {
+    setIsEditing(true);
+    setCurrentItem(image);
+    setGalleryForm({
+      title: image.title,
+      description: image.description,
+      category: image.category || "",
+      imageUrl: image.imageUrl || "",
+      imageFile: null
+    });
+    setGalleryDialogOpen(true);
   };
 
   const incrementVisitCount = async () => {
@@ -367,6 +431,7 @@ const Admin = () => {
         fetchContacts();
         fetchProjects();
         fetchBlogPosts();
+        fetchGalleryImages();
         fetchVisitStats();
       }
     });
@@ -409,6 +474,7 @@ const Admin = () => {
             <TabsTrigger value="contacts">Messages</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="blog">Blog Posts</TabsTrigger>
+            <TabsTrigger value="gallery">Gallery</TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics" className="space-y-4">
@@ -569,12 +635,12 @@ const Admin = () => {
                         <Input
                           type="file"
                           accept="image/*"
-                          onChange={handleImageChange}
+                          onChange={(e) => handleImageChange(e, setProjectForm, projectForm)}
                           className="flex-1"
                         />
                         <Button 
                           type="button" 
-                          onClick={handleUploadImage}
+                          onClick={() => handleUploadImage(projectForm, setProjectForm)}
                           disabled={!projectForm.imageFile || imageUploading}
                           size="sm"
                         >
@@ -780,6 +846,158 @@ const Admin = () => {
                 </div>
               </Card>
             ))}
+          </TabsContent>
+
+          <TabsContent value="gallery" className="space-y-4">
+            <div className="flex justify-end">
+              <Dialog open={galleryDialogOpen} onOpenChange={(open) => {
+                setGalleryDialogOpen(open);
+                if (!open) resetForms();
+              }}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => {
+                    resetForms();
+                    setGalleryDialogOpen(true);
+                  }}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Gallery Image
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {isEditing ? "Edit Gallery Image" : "Add New Gallery Image"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto">
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Image Title"
+                        value={galleryForm.title}
+                        onChange={(e) =>
+                          setGalleryForm({ ...galleryForm, title: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Textarea
+                        placeholder="Image Description"
+                        value={galleryForm.description}
+                        onChange={(e) =>
+                          setGalleryForm({
+                            ...galleryForm,
+                            description: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Category"
+                        value={galleryForm.category}
+                        onChange={(e) =>
+                          setGalleryForm({ ...galleryForm, category: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium mb-1">Image</label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageChange(e, setGalleryForm, galleryForm)}
+                          className="flex-1"
+                        />
+                        <Button 
+                          type="button" 
+                          onClick={() => handleUploadImage(galleryForm, setGalleryForm)}
+                          disabled={!galleryForm.imageFile || imageUploading}
+                          size="sm"
+                        >
+                          {imageUploading ? "Uploading..." : "Upload"}
+                          <Upload className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+                      {galleryForm.imageUrl && (
+                        <div className="mt-2">
+                          <p className="text-sm text-muted-foreground mb-1">Image Preview:</p>
+                          <img 
+                            src={galleryForm.imageUrl} 
+                            alt="Preview" 
+                            className="max-h-40 object-cover rounded-md" 
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      onClick={() => {
+                        const galleryData = {
+                          title: galleryForm.title,
+                          description: galleryForm.description,
+                          category: galleryForm.category,
+                          imageUrl: galleryForm.imageUrl,
+                        };
+                        handleSave("galleryImages", galleryData);
+                      }}
+                      disabled={!galleryForm.imageUrl || !galleryForm.title}
+                    >
+                      {isEditing ? "Update" : "Add"} Gallery Image
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {galleryImages.map((image) => (
+                <Card key={image.id} className="overflow-hidden">
+                  <div className="aspect-square">
+                    <img 
+                      src={image.imageUrl} 
+                      alt={image.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold">{image.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">{image.description}</p>
+                        {image.category && (
+                          <span className="inline-block mt-2 text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
+                            {image.category}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditGalleryImage(image)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete("galleryImages", image.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+              {galleryImages.length === 0 && (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  <Image className="mx-auto h-12 w-12 opacity-20 mb-4" />
+                  <p>No gallery images found. Add some images to get started!</p>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
