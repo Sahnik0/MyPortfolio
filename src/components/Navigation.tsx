@@ -18,7 +18,7 @@ const Navigation = () => {
         <Link to="/" className="text-xl font-display font-bold">
           Portfolio
         </Link>
-        <ul className="flex space-x-4 sm:space-x-8">
+        <ul className="hidden md:flex space-x-4 sm:space-x-8">
           {links.map((link) => (
             <li key={link.href}>
               <Link
@@ -37,6 +37,20 @@ const Navigation = () => {
             </li>
           ))}
         </ul>
+        
+        {/* Mobile navigation */}
+        <div className="md:hidden">
+          <button 
+            className="text-muted-foreground hover:text-primary focus:outline-none"
+            aria-label="Menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
       </div>
     </nav>
   );
