@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GalleryImage {
@@ -19,6 +18,7 @@ const Gallery = () => {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
 
   useEffect(() => {
     const fetchGalleryImages = async () => {
@@ -62,7 +62,7 @@ const Gallery = () => {
 
   return (
     <div className="section-padding">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto content-container">
         <h1 className="text-4xl md:text-5xl font-display font-bold animate-fade-up">
           Gallery
         </h1>
@@ -82,33 +82,65 @@ const Gallery = () => {
             </TabsList>
             
             <TabsContent value={activeCategory}>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredImages.length > 0 ? (
-                  filteredImages.map((image) => (
-                    <Card key={image.id} className="overflow-hidden">
-                      <div className="aspect-square">
-                        <img 
-                          src={image.imageUrl} 
-                          alt={image.title}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                          loading="lazy"
-                        />
+              {filteredImages.length > 0 ? (
+                <div className="gallery-container">
+                  {filteredImages.map((image) => (
+                    <div 
+                      key={image.id} 
+                      className="gallery-item"
+                      onClick={() => setSelectedImage(image)}
+                    >
+                      <img 
+                        src={image.imageUrl} 
+                        alt={image.title}
+                        className="gallery-image"
+                        loading="lazy"
+                      />
+                      <div className="gallery-overlay">
+                        <h3 className="gallery-title">{image.title}</h3>
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-lg">{image.title}</h3>
-                        <p className="text-muted-foreground text-sm mt-1">{image.description}</p>
-                      </div>
-                    </Card>
-                  ))
-                ) : (
-                  <p className="col-span-full text-center py-12 text-muted-foreground">
-                    No images found in this category.
-                  </p>
-                )}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center py-12 text-muted-foreground">
+                  No images found in this category.
+                </p>
+              )}
             </TabsContent>
           </Tabs>
         </div>
+        
+        {/* Image modal */}
+        {selectedImage && (
+          <div 
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div 
+              className="bg-card max-w-4xl max-h-[90vh] rounded-lg overflow-hidden shadow-xl flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="relative w-full h-auto max-h-[80vh] overflow-hidden">
+                <img 
+                  src={selectedImage.imageUrl}
+                  alt={selectedImage.title}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold">{selectedImage.title}</h3>
+                <p className="mt-2 text-muted-foreground">{selectedImage.description}</p>
+              </div>
+              <button 
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-background/50 flex items-center justify-center text-foreground hover:bg-background/70"
+                onClick={() => setSelectedImage(null)}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
